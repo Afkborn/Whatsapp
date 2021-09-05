@@ -4,12 +4,8 @@ from winreg import HKEY_CLASSES_ROOT, HKEY_CURRENT_USER, OpenKey, QueryValueEx
 import shutil
 import platform
 from os import listdir
-
+from time import sleep
 VERLIST = ['93.','92.','91.']
-
-
-
-
 
 def getDefaultBrowser():
     browser_path = shutil.which('open')
@@ -39,8 +35,10 @@ def getDefaultBrowser():
     return False
 
 
-
 if __name__ == "__main__":
     if getDefaultBrowser():
-        print("ok")
-
+        # profileName = input("Profile Name: ")
+        profileName = "profile1"
+        whatsapp = Whatsapp(CHROMEVERSION,profileName)
+        sleep(999)
+        
