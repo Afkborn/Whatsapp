@@ -1,8 +1,9 @@
-from os import getcwd
+from os import getcwd, stat
 from selenium.webdriver import Chrome,ChromeOptions
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 from time import sleep 
+from Python.Person import Person
 class Whatsapp: 
     __chromeDriverPath = getcwd() +  fr"/Driver/chromedriver.exe"
     __whatsappURL = "https://web.whatsapp.com/"
@@ -14,6 +15,7 @@ class Whatsapp:
 
         self.options = ChromeOptions()
         self.options.add_argument(f"user-data-dir={self.__profileLoc}")
+        self.options.add_argument("--lang=tr")
         self.options.add_argument("--log-level=3")
         self.options.headless = headless
         self.startBrowser()
@@ -48,6 +50,7 @@ class Whatsapp:
                 self.__isLogin = False
         else:
             self.__isLogin = True
+        sleep(1)
 
     def getChromeDriverPath(self):
         return self.__chromeDriverPath
@@ -75,8 +78,99 @@ class Whatsapp:
             if activeCBRememberMeStation != newBool:
                 self.browser.execute_script("document.getElementsByName('rememberMe')[0].click()")
     
-    def getLastConversations(self):
-        pass
+    def getPersonFromLastConversations(self):
+        nameSet = set()
+        for _ in range(30):
+            for i in range(1,17):
+                try:
+                    try:
+                        # for person
+                        name = self.browser.find_element_by_xpath(f'//*[@id="pane-side"]/div[2]/div/div/div[{i}]/div/div/div[2]/div[1]/div[1]/span/span').text
+                        gp = self.browser.find_element_by_xpath(f'//*[@id="pane-side"]/div[2]/div/div/div[{i}]/div/div/div[1]/div/div/div/span').get_attribute('data-testid')
+                    except:
+                        pass
+                    try:
+
+                        # for group 
+                        name = self.browser.find_element_by_xpath(f'//*[@id="pane-side"]/div[2]/div/div/div[{i}]/div/div/div[2]/div[1]/div[1]/span').text
+                        gp = self.browser.find_element_by_xpath(f'//*[@id="pane-side"]/div[2]/div/div/div[{i}]/div/div/div[1]/div/div/div/span').get_attribute('data-testid')
+                    except:
+                        pass
+                    if gp == "default-group":
+                        name = f"{name},GROUP"
+                    elif gp == "default-user":
+                        name = f"{name},PERSON"
+                    if not ",PERSON,PERSON" in name:
+                        nameSet.add(name)
+                except:
+                    pass
+            self.scroolPaneSide(100)
+        self.personOjb = []
+        for i in nameSet:
+            if ",PERSON" in i:
+                name = i.replace(',PERSON',"")
+                myPerson = Person(name,0)
+            else:
+                name = i.replace(",GROUP","")
+                myPerson = Person(name,1)
+            
+            self.personOjb.append(myPerson)
+        
+    def checkName(self,name):
+        for i in self.personOjb:
+            iName = i.getName()
+            if iName == name:
+                return True
+        return False
+
+    def getPersonFromNewChatPart(self):
+        self.clickNewChatButton()
+        sleep(0.5)
+        nameSet = set()
+        for _ in range(150):
+            for i in range(17):
+                try:
+                    name = self.browser.find_element_by_xpath(f'//*[@id="app"]/div[1]/div[1]/div[2]/div[1]/span/div[1]/span/div[1]/div[2]/div[2]/div/div/div[{i}]/div/div/div[2]/div[1]/div/span/span').text
+                    nameSet.add(name)
+                except:
+                    pass
+            self.scroolNewChatPartPaneSide(200)
+        nameList = list(nameSet)
+        for i in nameList:
+            if not self.checkName(i):
+                myPerson = Person(i,0)
+                self.personOjb.append(myPerson)
+
+
+
+            
+    def scroolPaneSide(self,y):
+        script = f"""myElement = document.getElementById('pane-side')
+        myElement.scrollBy(0,{y})"""
+        if self.__isLogin and self.browser.current_url == self.__whatsappURL:
+            self.browser.execute_script(script)
+        
+    def scroolNewChatPartPaneSide(self,y):
+        script = f"""
+        function getElementByXpath(path){{
+            return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        }}
+        myObj1 = getElementByXpath('//*[@id="app"]/div[1]/div[1]/div[2]/div[1]/span/div[1]/span/div[1]/div[2]')
+        myObj1.scrollBy(0,{y})
+        """
+        if self.__isLogin and self.browser.current_url == self.__whatsappURL:
+            self.browser.execute_script(script)
+
+    def clickNewChatButton(self):
+        script = f"""var myObj = document.querySelector('[title="Yeni sohbet"]');
+        myObj.click()"""
+        if self.__isLogin and self.browser.current_url == self.__whatsappURL:
+            self.browser.execute_script(script)
+    
+    def printPerson(self):
+        for person in self.personOjb:
+            print(f"Name: {person.getName()} Type: {person.getType()}")
+
 
 
 if __name__ == "__main__":

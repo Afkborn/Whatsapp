@@ -21,7 +21,6 @@ def getDefaultBrowser():
                 global CHROMEVERSION
                 if "chrome" in browser_path:
                     browserLoc = browser_path.replace('\chrome.exe',"")
-                    
                     for folderName in listdir(browserLoc):
                         for ver in VERLIST:
                             if ver in folderName :
@@ -40,5 +39,9 @@ if __name__ == "__main__":
         # profileName = input("Profile Name: ")
         profileName = "profile1"
         whatsapp = Whatsapp(CHROMEVERSION,profileName)
-        sleep(999)
+        whatsapp.getPersonFromLastConversations()
+        input('devam etmek için bir tuşa bas')
+        whatsapp.printPerson()
+        input('çıkmak için bir tuşa bas')
+
         
