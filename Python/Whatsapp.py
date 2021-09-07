@@ -53,13 +53,17 @@ class Whatsapp:
         sleep(1)
 
     def getChromeDriverPath(self):
+        """return active chrome driver path"""
         return self.__chromeDriverPath
     def setChromeDriverPath(self,newPath):
+        """set new chrome driver path"""
         self.__chromeDriverPath = newPath
 
     def getWhatsappURL(self):
+        """return whatsapp url. default url: 'https://web.whatsapp.com/'"""
         return self.__whatsappURL
     def setWhatsappURL(self,newURL):
+        """set new whatsapp url. format: htpps://URL.COM"""
         self.__whatsappURL = newURL
 
     def getCBRememberMe(self) -> bool:
@@ -79,6 +83,7 @@ class Whatsapp:
                 self.browser.execute_script("document.getElementsByName('rememberMe')[0].click()")
     
     def getPersonFromLastConversations(self):
+        """Son konuşmalardan kişi isim bilgilerini çeker."""
         nameSet = set()
         for _ in range(30):
             for i in range(1,17):
@@ -104,8 +109,8 @@ class Whatsapp:
                         nameSet.add(name)
                 except:
                     pass
-            self.scroolPaneSide(100)
-        self.personOjb = []
+            self.__scroolPaneSide(100)
+        self.personObj = []
         for i in nameSet:
             if ",PERSON" in i:
                 name = i.replace(',PERSON',"")
@@ -114,17 +119,19 @@ class Whatsapp:
                 name = i.replace(",GROUP","")
                 myPerson = Person(name,1)
             
-            self.personOjb.append(myPerson)
+            self.personObj.append(myPerson)
         
-    def checkName(self,name):
-        for i in self.personOjb:
+    def __checkName(self,name):
+        """name değişkenin self.personObj içinde olup olmadığını kontrol eder eğer var ise True, yok ise False döner."""
+        for i in self.personObj:
             iName = i.getName()
             if iName == name:
                 return True
         return False
 
     def getPersonFromNewChatPart(self):
-        self.clickNewChatButton()
+        """Yeni sohbet ekranından kişileri çekmeye yarayan fonksiyon. """
+        self.__clickNewChatButton()
         sleep(0.5)
         nameSet = set()
         for _ in range(150):
@@ -134,23 +141,24 @@ class Whatsapp:
                     nameSet.add(name)
                 except:
                     pass
-            self.scroolNewChatPartPaneSide(200)
+            self.__scroolNewChatPartPaneSide(200)
         nameList = list(nameSet)
         for i in nameList:
-            if not self.checkName(i):
+            if not self.__checkName(i):
                 myPerson = Person(i,0)
-                self.personOjb.append(myPerson)
+                self.personObj.append(myPerson)
 
 
 
             
-    def scroolPaneSide(self,y):
+    def __scroolPaneSide(self,y):
         script = f"""myElement = document.getElementById('pane-side')
         myElement.scrollBy(0,{y})"""
         if self.__isLogin and self.browser.current_url == self.__whatsappURL:
             self.browser.execute_script(script)
         
-    def scroolNewChatPartPaneSide(self,y):
+    def __scroolNewChatPartPaneSide(self,y):
+        """Yeni sohbet oluştur panelinde scrool yapmaya yarayan fonksiyon. Y ne kadar scrool yapılacağını belirtir."""
         script = f"""
         function getElementByXpath(path){{
             return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
@@ -161,14 +169,16 @@ class Whatsapp:
         if self.__isLogin and self.browser.current_url == self.__whatsappURL:
             self.browser.execute_script(script)
 
-    def clickNewChatButton(self):
+    def __clickNewChatButton(self):
+        """Yeni sohbet oluştur butonuna tıklar"""
         script = f"""var myObj = document.querySelector('[title="Yeni sohbet"]');
         myObj.click()"""
         if self.__isLogin and self.browser.current_url == self.__whatsappURL:
             self.browser.execute_script(script)
     
     def printPerson(self):
-        for person in self.personOjb:
+        """objeye kayıt edilen kişileri yazdırır."""
+        for person in self.personObj:
             print(f"Name: {person.getName()} Type: {person.getType()}")
 
 
