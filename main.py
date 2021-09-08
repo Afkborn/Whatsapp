@@ -41,7 +41,8 @@ if __name__ == "__main__":
         whatsapp = Whatsapp(CHROMEVERSION,profileName)
         whatsapp.getPersonFromLastConversations()
         input('devam etmek için bir tuşa bas')
-        whatsapp.printPerson()
+        whatsapp.getPersonDetail("Emmoğlu")
         input('çıkmak için bir tuşa bas')
+
 
         

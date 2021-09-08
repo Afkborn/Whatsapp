@@ -2,7 +2,7 @@ from os import getcwd, stat
 from selenium.webdriver import Chrome,ChromeOptions
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
-from time import sleep 
+from time import get_clock_info, sleep 
 from Python.Person import Person
 class Whatsapp: 
     __chromeDriverPath = getcwd() +  fr"/Driver/chromedriver.exe"
@@ -114,10 +114,10 @@ class Whatsapp:
         for i in nameSet:
             if ",PERSON" in i:
                 name = i.replace(',PERSON',"")
-                myPerson = Person(name,0)
+                myPerson = Person(name,0,0)
             else:
                 name = i.replace(",GROUP","")
-                myPerson = Person(name,1)
+                myPerson = Person(name,1,0)
             
             self.personObj.append(myPerson)
         
@@ -145,10 +145,16 @@ class Whatsapp:
         nameList = list(nameSet)
         for i in nameList:
             if not self.__checkName(i):
-                myPerson = Person(i,0)
+                myPerson = Person(i,0,1)
                 self.personObj.append(myPerson)
 
-
+    def __getPersonOBJ(self,name) -> Person:
+        """Adı verilen kullanıcının person objesini döner"""
+        for i in self.personObj:
+            iName = i.getName()
+            if iName == name:
+                return i
+  
 
             
     def __scroolPaneSide(self,y):
@@ -180,6 +186,32 @@ class Whatsapp:
         """objeye kayıt edilen kişileri yazdırır."""
         for person in self.personObj:
             print(f"Name: {person.getName()} Type: {person.getType()}")
+
+    def searchPeopleInNewChatSide(self,name):
+        """Yeni sohbet ekranındaki arama kısmına verilen ismi yazar ve verilen isimle eşleşen bir kişi varsa tıklar ardından True döner."""
+        xpath = '//*[@id="app"]/div[1]/div[1]/div[2]/div[1]/span/div[1]/span/div[1]/div[1]/div/label/div/div[2]'
+        searchBox = self.browser.find_element_by_xpath(xpath)
+        searchBox.send_keys(name)
+        sleep(0.1)
+        for i in range(1,6):
+            xpath = f'//*[@id="app"]/div[1]/div[1]/div[2]/div[1]/span/div[1]/span/div[1]/div[2]/div[1]/div/div/div[{i}]/div/div/div[2]/div[1]/div/span/span'
+            try:
+                findObj = self.browser.find_element_by_xpath(xpath)
+                if findObj.text == name:
+                    findObj.click()
+                    return True
+            except:
+                pass
+
+    def getPersonDetail(self,name):
+        if self.__isLogin and self.browser.current_url == self.__whatsappURL and self.__checkName(name): # giriş yapılıp yapılmadığını kontrol et
+            myPerson = self.__getPersonOBJ(name) #fonksiyona verilen name adındaki objeyi al
+            self.__clickNewChatButton() 
+            sleep(0.1)
+            if self.searchPeopleInNewChatSide(myPerson.getName()):
+                #get detail
+                pass
+
 
 
 
