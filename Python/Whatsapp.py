@@ -181,6 +181,7 @@ class Whatsapp:
         myObj.click()"""
         if self.__isLogin and self.browser.current_url == self.__whatsappURL:
             self.browser.execute_script(script)
+            sleep(0.1)
     
     def printPerson(self):
         """objeye kayıt edilen kişileri yazdırır."""
@@ -202,16 +203,35 @@ class Whatsapp:
                     return True
             except:
                 pass
+    def __pressSend(self):
+        script = f"""
+        function getElementByXpath(path){{
+            return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        }}
+        myButton = getElementByXpath("//*[@id='main']/footer/div[1]/div/div/div[2]/div[2]/button")
+        myButton.click()
+        """
+        if self.__isLogin and self.browser.current_url == self.__whatsappURL:
+            self.browser.execute_script(script)
 
     def getPersonDetail(self,name):
         if self.__isLogin and self.browser.current_url == self.__whatsappURL and self.__checkName(name): # giriş yapılıp yapılmadığını kontrol et
             myPerson = self.__getPersonOBJ(name) #fonksiyona verilen name adındaki objeyi al
             self.__clickNewChatButton() 
-            sleep(0.1)
             if self.searchPeopleInNewChatSide(myPerson.getName()):
                 #get detail
                 pass
 
+    def writeText(self,personName,message):
+        if self.__isLogin and self.__checkName(personName) and self.browser.current_url == self.__whatsappURL:
+            self.__clickNewChatButton() 
+            if self.searchPeopleInNewChatSide(personName):
+                myTextBox = self.browser.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div/div/div[2]/div[1]/div/div[2]')
+                myTextBox.send_keys(message)
+                self.__pressSend()
+
+            else:
+                print("sex")
 
 
 
