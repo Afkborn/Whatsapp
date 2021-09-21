@@ -188,7 +188,7 @@ class Whatsapp:
         for person in self.personObj:
             print(f"Name: {person.getName()} Type: {person.getType()}")
 
-    def searchPeopleInNewChatSide(self,name):
+    def clickPeopleInNewChatSide(self,name):
         """Yeni sohbet ekranındaki arama kısmına verilen ismi yazar ve verilen isimle eşleşen bir kişi varsa tıklar ardından True döner."""
         xpath = '//*[@id="app"]/div[1]/div[1]/div[2]/div[1]/span/div[1]/span/div[1]/div[1]/div/label/div/div[2]'
         searchBox = self.browser.find_element_by_xpath(xpath)
@@ -200,6 +200,7 @@ class Whatsapp:
                 findObj = self.browser.find_element_by_xpath(xpath)
                 if findObj.text == name:
                     findObj.click()
+                    sleep(0.1)
                     return True
             except:
                 pass
@@ -215,23 +216,55 @@ class Whatsapp:
             self.browser.execute_script(script)
 
     def getPersonDetail(self,name):
+        """Kişi hakkındaki bilgileri çeker. Hakkımda ve telefon numarası."""
         if self.__isLogin and self.browser.current_url == self.__whatsappURL and self.__checkName(name): # giriş yapılıp yapılmadığını kontrol et
             myPerson = self.__getPersonOBJ(name) #fonksiyona verilen name adındaki objeyi al
-            self.__clickNewChatButton() 
-            if self.searchPeopleInNewChatSide(myPerson.getName()):
-                #get detail
-                pass
+            if myPerson.getType() == "Person":
+                self.__clickNewChatButton() 
+                if self.clickPeopleInNewChatSide(myPerson.getName()):
+                    #get detail
+                    self.__clickXY(390,28)
+                    sleep(1)
+                    try:
+                        telephoneNumber = self.browser.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[2]/div[3]/span/div[1]/span/div[1]/div/section/div[4]/div[3]/div/div/span/span').text
+                    except:
+                        telephoneNumber = None
+                    try:
+                        statText = self.browser.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[2]/div[3]/span/div[1]/span/div[1]/div/section/div[4]/div[2]/div/div/span/span').text
+                    except:
+                        statText = None
+                    myPerson.setStatusText(statText=statText)
+                    myPerson.setTelephoneNumber(telephoneNumber=telephoneNumber)
+                    print(myPerson.getStatusText())
+                    print(myPerson.getTelephoneNumber())
+            else:
+                print(f"'{name}' type is group")
 
-    def writeText(self,personName,message):
+    def writeText(self,personName,message,count = 1):
+        """Verilen kişiye girilen mesajı girildiği sayı kadar atar. """
         if self.__isLogin and self.__checkName(personName) and self.browser.current_url == self.__whatsappURL:
             self.__clickNewChatButton() 
-            if self.searchPeopleInNewChatSide(personName):
-                myTextBox = self.browser.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div/div/div[2]/div[1]/div/div[2]')
-                myTextBox.send_keys(message)
-                self.__pressSend()
-
+            myPerson = self.__getPersonOBJ(personName)
+            if self.clickPeopleInNewChatSide(myPerson.getName()): 
+                for _ in range(count):
+                    myTextBox = self.browser.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div/div/div[2]/div[1]/div/div[2]')
+                    myTextBox.send_keys(message)
+                    self.__pressSend()
             else:
-                print("sex")
+                print("Person can't found")
+
+    def __clickXY(self,x,y):
+        """tarayıcıda istenilen yere tıklamak için kullanılıyor"""
+        action = ActionChains(self.browser)
+        action.move_by_offset(x,y)
+        action.click()
+        action.perform()
+        action.reset_actions()
+
+
+    def getSS(self,name):
+        """test amaçlı ekran görüntüsü almak için"""
+        self.browser.save_screenshot(f"{name}.png")
 
 
 

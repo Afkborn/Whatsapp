@@ -37,14 +37,18 @@ def getDefaultBrowser():
 if __name__ == "__main__":
     if getDefaultBrowser():
 
+
         # profileName = input("Profile Name: ")
         profileName = "profile1"
         whatsapp = Whatsapp(CHROMEVERSION,profileName)
         whatsapp.getPersonFromLastConversations()
-        input('devam etmek için bir tuşa bas')
-        whatsapp.writeText("Emmoğlu","bu mesaj program tarafından otomatik atıldı ayol")
-        
+
+
+
+        # whatsapp.writeText("X PERSON","Whatsapp text message ")
+        whatsapp.getPersonDetail("X PERSON")
         input('çıkmak için bir tuşa bas')
+
 
 
         
